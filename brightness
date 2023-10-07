@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Keep in mind this script only runs on based X11 based window managers.
+# Run at your own risk if your windowing system is wayland.
+
+if [ -z "$1" ]; then
+    echo "Missing argument: Accepted arguments {up, down}"
+    exit 1
+fi
+
+COMMAND=$1
+INCREMENT=0.2
+
+if [[ $COMMAND != "up" && $COMMAND != "down" ]]; then
+    echo "Unknown argument"
+    exit 1
+fi
+
+# Get name of monitors
+for monitor in $(xrandr | grep " connected " | awk '{ print $1 }'); do
+    BRIGHTNESS=$(xrandr --verbose --current | grep -A5 "$monitor" | grep Brightness | awk '{ print $2 }')
+    
+    # Calculate new brightness using bc
+    # Run `man bc` for more info
+    NEW_BRIGHTNESS=$(echo "$BRIGHTNESS + $INCREMENT" | bc)
+    if [ $COMMAND == "down" ]; then
+        NEW_BRIGHTNESS=$(echo "$BRIGHTNESS - $INCREMENT" | bc)
+    fi
+
+    if [[ $BRIGHTNESS == "1.0" && $COMMAND == "up" ]] || [[ $BRIGHTNESS == "0.20" && $COMMAND == "down" ]]
+    then
+        echo "Brightness is at limit.."
+        exit 1
+    fi
+
+    # Finally, change the brightness using xrandr
+    xrandr --output $monitor --brightness $NEW_BRIGHTNESS
+done
