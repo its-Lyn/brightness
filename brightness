@@ -1,12 +1,17 @@
 #!/bin/bash
 
-# Keep in mind this script only runs on based X11 based window managers.
+# Keep in mind this script only runs on X11 based windowing systems.
 # Run at your own risk if your windowing system is wayland.
 
 if [ -z "$1" ]; then
     echo "Missing argument: Accepted arguments {up, down}"
     exit 1
 fi
+
+if [ $XDG_SESSION_TYPE != "x11" ]; then
+    echo "ERROR: Invalid session type! Please use x11"
+    exit 1
+end
 
 COMMAND=$1
 INCREMENT=0.2
